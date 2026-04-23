@@ -1,0 +1,17 @@
+{
+  "name": "ggshield-scan-task",
+  "version": "0.1.0",
+  "description": "GitGuardian Shield task for Azure Pipelines",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -f index.js index.js.map"
+  },
+  "dependencies": {
+    "azure-pipelines-task-lib": "^4.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.0"
+  }
+}

@@ -1,0 +1,20 @@
+# Pipeline decorator template.
+# When this extension is installed in an Azure DevOps organization,
+# this step is injected at the START of every agent job in every pipeline.
+#
+# Pipeline authors can opt out for a single run / repo by setting the
+# pipeline variable `skipGGShield: true` (useful for debugging).
+#
+# Requires a Generic service connection named EXACTLY as configured below,
+# accessible by the pipeline. Recommended: create one at the project or
+# collection level and grant access to all pipelines.
+
+steps:
+- ${{ if ne(variables['skipGGShield'], 'true') }}:
+  - task: ggshield@0
+    displayName: 'ggshield - secret scan'
+    inputs:
+      gitguardianConnection: 'gitguardian-api'
+      scanMode: 'ci'
+      failOnIssues: true
+    continueOnError: false
