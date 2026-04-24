@@ -92,6 +92,17 @@ async function run(): Promise<void> {
     const additionalArgs = tl.getInput('additionalArguments', false) || '';
     const failOnIssues = tl.getBoolInput('failOnIssues', false);
 
+    const rawTimeout = tl.getInput('scanTimeoutSeconds', false) || '80';
+    const parsedTimeout = Number.parseInt(rawTimeout, 10);
+    if (!Number.isFinite(parsedTimeout) || parsedTimeout < 10) {
+      tl.setResult(
+        tl.TaskResult.Failed,
+        `scanTimeoutSeconds must be an integer >= 10 (got "${rawTimeout}").`
+      );
+      return;
+    }
+    const scanTimeoutMs = parsedTimeout * 1000;
+
     const apiKey = tl.getEndpointAuthorizationParameter(
       connectionName,
       'password',
@@ -182,20 +193,41 @@ async function run(): Promise<void> {
     console.log(`Running: ${ggshieldCmd} ${args.join(' ')}`);
     const result = spawnSync(ggshieldCmd, args, {
       stdio: 'inherit',
-      env
+      env,
+      timeout: scanTimeoutMs
     });
+
+    // Timeout: pygitguardian retries 429 rate-limits indefinitely, so a scan
+    // that runs past the timeout is almost always stuck on rate-limit backoff.
+    // Fail-open here — a transient GitGuardian-side event must not take down
+    // every pipeline in the org.
+    if (result.signal === 'SIGTERM') {
+      tl.setResult(
+        tl.TaskResult.SucceededWithIssues,
+        `ggshield exceeded the ${parsedTimeout}s scan timeout and was terminated. ` +
+        `This usually indicates GitGuardian API rate-limiting; the scan was skipped to avoid blocking the build.`
+      );
+      return;
+    }
 
     if (result.status === 0) {
       tl.setResult(tl.TaskResult.Succeeded, 'No secrets detected.');
-    } else if (failOnIssues) {
-      tl.setResult(
-        tl.TaskResult.Failed,
-        `ggshield exited with code ${result.status}. See output above for details.`
-      );
+    } else if (result.status === 1) {
+      // Policy violation (secrets found). This is the only case failOnIssues governs.
+      if (failOnIssues) {
+        tl.setResult(tl.TaskResult.Failed, 'ggshield detected secrets. See output above.');
+      } else {
+        tl.setResult(
+          tl.TaskResult.SucceededWithIssues,
+          'ggshield detected secrets (not failing build: failOnIssues=false).'
+        );
+      }
     } else {
+      // Non-1 non-zero: infrastructure error (auth, network, crash). Warn but
+      // do not block the build.
       tl.setResult(
         tl.TaskResult.SucceededWithIssues,
-        `ggshield exited with code ${result.status} (not failing build: failOnIssues=false).`
+        `ggshield exited with code ${result.status} (infrastructure error, not a secret finding). See output above.`
       );
     }
   } catch (err: any) {
