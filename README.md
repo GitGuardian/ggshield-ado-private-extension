@@ -87,7 +87,11 @@ Because this decorator fires on every agent job in every pipeline in the organiz
 
 - [API usage, quotas, and rate limiting](https://docs.gitguardian.com/api-docs/usage-and-quotas#rate-limiting)
 
-Practical mitigations if you're close to the limit:
+### Built-in safety net
+
+The task has a `scanTimeoutSeconds` input (default: `80`). When the scan exceeds it, ggshield is terminated and the step completes as `SucceededWithIssues` (a warning, not a failure). This exists specifically to contain GitGuardian API rate-limit events: `pygitguardian` retries on `429` indefinitely, so without this cap a transient rate-limit incident would silently turn into an org-wide pipeline outage via ggshield's retry loop. Tune it down (e.g. `30`) on fast pipelines where you'd rather fail-open than wait, or up for large monorepo scans.
+
+### Practical mitigations if you're close to the limit
 
 - Roll out to a subset of projects first by gating the decorator with `${{ if ... }}` on `System.TeamProject` in `decorator/ggshield-decorator.yml`.
 - Gate by branch (e.g. only `main` + PR builds) to cut scan volume on feature-branch noise.
