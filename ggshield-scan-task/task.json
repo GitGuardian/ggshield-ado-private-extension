@@ -55,6 +55,14 @@
       "label": "Fail the build when secrets are found",
       "defaultValue": "true",
       "required": false
+    },
+    {
+      "name": "scanTimeoutSeconds",
+      "type": "string",
+      "label": "Scan timeout (seconds)",
+      "defaultValue": "80",
+      "required": false,
+      "helpMarkDown": "Maximum wall-clock time allowed for the ggshield scan. When exceeded, the scan is terminated and the step completes as SucceededWithIssues (a warning, not a failure) — this prevents GitGuardian API rate-limit events from turning into org-wide pipeline outages via ggshield's unbounded retry-on-429 behavior."
     }
   ],
   "execution": {
