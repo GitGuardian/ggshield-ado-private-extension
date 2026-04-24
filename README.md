@@ -1,4 +1,4 @@
-# GitGuardian Shield for Azure Pipelines (private decorator extension)
+# gghield for Azure Pipelines (private decorator extension)
 
 Scaffold for an Azure DevOps extension that:
 
