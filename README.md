@@ -18,7 +18,24 @@ Share a single ggshield API key across all pipelines in an Azure DevOps organiza
 Before building, edit `vss-extension.json`:
 
 - Replace `REPLACE-WITH-YOUR-PUBLISHER-ID` with your Marketplace publisher ID. **Required** — `tfx` will refuse to package the extension otherwise, and the resulting `.vsix` filename encodes this value.
-- Bump the `version` field manually for each release. The build script intentionally does not auto-bump so versions stay deterministic and reviewable.
+- Bump the top-level `version` field manually for each release. The build script intentionally does not auto-bump so versions stay deterministic and reviewable.
+
+### Versioning: one number to bump
+
+Azure DevOps tracks **two** versions for this kind of extension:
+
+| Where                                  | What it controls                                                                |
+| -------------------------------------- | ------------------------------------------------------------------------------- |
+| `vss-extension.json` → `version`       | Marketplace upgrade detection (and `.vsix` filename)                            |
+| `ggshield-scan-task/task.json` → `version: { Major, Minor, Patch }` | Whether ADO agents pull new task bits                                           |
+
+Both must agree, or you get either a stale task running on agents (Marketplace updated, agents didn't) or a rejected upload (agents would update, Marketplace says "already at this version"). To avoid keeping them in sync by hand, **only edit `vss-extension.json`'s `version`**: `build.sh` parses it and rewrites the `Major/Minor/Patch` block in `task.json` before packaging. The result is deterministic — commit the resulting `task.json` change alongside the manifest bump.
+
+If you ever need to sync without a full build (e.g. to commit a version bump separately), you can run just the sync step:
+
+```bash
+node -e 'const fs=require("fs");const ext=JSON.parse(fs.readFileSync("vss-extension.json","utf8"));const m=/^(\d+)\.(\d+)\.(\d+)$/.exec(ext.version);const[,M,m2,p]=m.map(Number);const t=JSON.parse(fs.readFileSync("ggshield-scan-task/task.json","utf8"));t.version={Major:M,Minor:m2,Patch:p};fs.writeFileSync("ggshield-scan-task/task.json",JSON.stringify(t,null,2)+"\n")'
+```
 
 ## Build
 
