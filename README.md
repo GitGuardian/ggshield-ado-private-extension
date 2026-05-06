@@ -81,6 +81,25 @@ variables:
 
 Useful for the pipeline that builds this extension itself (otherwise you'll get infinite recursion of self-scans).
 
+### Pass extra `ggshield` flags
+
+Need a flag the task doesn't expose directly (`--show-secrets`, `--exit-zero`, `--exclude`, `--banlist-detector`, etc.)? Skip the auto-injected decorator and call `ggshield@0` explicitly with `additionalArguments`:
+
+```yaml
+variables:
+  skipGGShield: true
+
+steps:
+  - task: ggshield@0
+    inputs:
+      gitguardianConnection: 'gitguardian-api'
+      scanMode: 'path'
+      scanTarget: '.'
+      additionalArguments: '--show-secrets --exit-zero'
+```
+
+`additionalArguments` is split with POSIX-shell-style quoting and forwarded verbatim to `ggshield`, so anything from [the upstream CLI reference](https://docs.gitguardian.com/ggshield-docs/reference/overview) works.
+
 ## Before rolling out org-wide
 
 The decorator fires on every agent job in every pipeline, so a broad rollout meaningfully increases ggshield API traffic. Those calls are subject to **API rate limits** shared across your workspace — review your quotas and headroom first: [usage, quotas, and rate limiting](https://docs.gitguardian.com/api-docs/usage-and-quotas#rate-limiting).
