@@ -182,7 +182,9 @@ async function run(): Promise<void> {
 
     const args = [...ggshieldPrefix, 'secret', 'scan', scanMode];
     if (scanMode === 'path') {
-      args.push('--recursive', scanTarget);
+      // CI agents have no stdin, so ggshield's >50-file confirmation
+      // prompt would otherwise hang the step until scanTimeoutSeconds.
+      args.push('--yes', '--recursive', scanTarget);
     } else if (scanMode === 'docker') {
       args.push(scanTarget);
     }
