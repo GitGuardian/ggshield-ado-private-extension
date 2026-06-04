@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "ggshield-ado-private-extension",
   "name": "ggshield for Azure Pipelines",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "publisher": "REPLACE-WITH-YOUR-PUBLISHER-ID",
   "public": false,
   "description": "Private extension that injects ggshield secret scanning into every pipeline in your Azure DevOps organization. Credentials are read from a Generic service connection.",
