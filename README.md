@@ -83,7 +83,7 @@ Useful for the pipeline that builds this extension itself (otherwise you'll get 
 
 ### Pass extra `ggshield` flags
 
-Need a flag the task doesn't expose directly (`--show-secrets`, `--exit-zero`, `--exclude`, `--banlist-detector`, etc.)? Skip the auto-injected decorator and call `ggshield@0` explicitly with `additionalArguments`:
+Need a flag the task doesn't expose directly (`--exit-zero`, `--exclude`, `--banlist-detector`, etc.)? Skip the auto-injected decorator and call `ggshield@0` explicitly with `additionalArguments`:
 
 ```yaml
 variables:
@@ -95,10 +95,12 @@ steps:
       gitguardianConnection: 'gitguardian-api'
       scanMode: 'path'
       scanTarget: '.'
-      additionalArguments: '--show-secrets --exit-zero'
+      additionalArguments: '--exit-zero --exclude "tests/**"'
 ```
 
-`additionalArguments` is split with POSIX-shell-style quoting and forwarded verbatim to `ggshield`, so anything from [the upstream CLI reference](https://docs.gitguardian.com/ggshield-docs/reference/overview) works.
+`additionalArguments` is split with POSIX-shell-style quoting and forwarded to `ggshield` (with the one exception noted below), so anything from [the upstream CLI reference](https://docs.gitguardian.com/ggshield-docs/reference/overview) works.
+
+> **`--show-secrets` is ignored.** The task strips it before invoking `ggshield`, so detected secrets are never printed in plaintext to the pipeline logs (which are visible to anyone with access to the run, and this task runs in every pipeline via the decorator). `ggshield` masks secret values in its output by default.
 
 ## Before rolling out org-wide
 
@@ -112,6 +114,12 @@ The decorator fires on every agent job in every pipeline, so a broad rollout mea
 - Only `secret scan ci` / `path` / `docker` modes are exposed.
 - Windows-hosted agents need Python 3.8+ on `PATH` for the auto-install fallback.
 - The decorator fires on every agent job; gate by branch or path with `${{ if ... }}` in `decorator/ggshield-decorator.yml` if needed.
+- The task strips `--show-secrets` from `additionalArguments`, but a repo can still
+  unmask its own secrets by committing a `.gitguardian.yaml` with `secret.show_secrets: true`
+  (a repo-local `ggshield` config the task intentionally honors for legitimate
+  settings like `paths-ignore` and detector banlists). If you need to prevent that
+  org-wide, have agents run with a pinned config via `ggshield --config-path` — at
+  the cost of ignoring all repo-local `.gitguardian.yaml` files.
 
 ## Future ideas
 

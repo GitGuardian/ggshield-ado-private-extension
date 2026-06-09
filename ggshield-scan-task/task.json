@@ -47,7 +47,7 @@
       "type": "string",
       "label": "Additional ggshield arguments",
       "required": false,
-      "helpMarkDown": "Extra flags passed verbatim to ggshield (e.g. --show-secrets, --exit-zero)."
+      "helpMarkDown": "Extra flags passed verbatim to ggshield (e.g. --exit-zero, --exclude, --banlist-detector). Note: --show-secrets is ignored on purpose so secret values are never printed in plaintext to the pipeline logs."
     },
     {
       "name": "failOnIssues",
