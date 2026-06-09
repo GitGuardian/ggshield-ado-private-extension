@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.1] - 2026-06-09
+
+### Fixed
+
+- The task now strips `--show-secrets` from `additionalArguments` (emitting a
+  warning) so detected secret values are never printed in plaintext to the
+  pipeline logs. `ggshield` masks secrets in its output by default; the old
+  docs example that enabled `--show-secrets` could leak real credentials into
+  broadly-visible CI logs. Removed that flag from the README and task help.
+
 ## [0.2.0] - 2026-06-04
 
 ### Added

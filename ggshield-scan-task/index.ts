@@ -282,6 +282,29 @@ function splitArgs(input: string): string[] {
 }
 
 /**
+ * Drop any `--show-secrets` token from the forwarded arguments.
+ *
+ * That flag makes ggshield print every detected secret in plaintext, which then
+ * lands in the pipeline logs — readable by anyone with access to the run. This
+ * task is injected org-wide by a decorator, so a single pipeline enabling it
+ * leaks real credentials into broadly-visible logs. ggshield otherwise censors
+ * secrets by default (e.g. `Xy9$k***...23XYZ`), which is what we keep.
+ *
+ * This is the one deliberate exception to forwarding additionalArguments
+ * verbatim: a secret scanner must never be the thing that prints the secret.
+ */
+function stripShowSecrets(parsedArgs: string[]): string[] {
+  const kept = parsedArgs.filter((arg) => arg !== '--show-secrets');
+  if (kept.length !== parsedArgs.length) {
+    tl.warning(
+      'Ignoring --show-secrets: it would print detected secrets in plaintext ' +
+      'to the pipeline logs. ggshield keeps secret values masked in its output.'
+    );
+  }
+  return kept;
+}
+
+/**
  * Try a list of (cmd, args) tuples and return the first that exits 0.
  * Returns null if nothing worked.
  */
@@ -428,7 +451,7 @@ async function run(): Promise<void> {
       args.push(scanTarget);
     }
     if (additionalArgs.trim() !== '') {
-      args.push(...splitArgs(additionalArgs));
+      args.push(...stripShowSecrets(splitArgs(additionalArgs)));
     }
 
     console.log(`Running: ${ggshieldCmd} ${args.join(' ')}`);
