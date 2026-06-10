@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0] - 2026-06-10
+
+### Added
+
+- New `safeLogging` task input (default `false`). When enabled, the task runs
+  `ggshield` with `--format json` and prints a redacted, human-readable summary
+  (detector, file, line, masked match value, incident URL) instead of streaming
+  `ggshield`'s text patch. This works around a `ggshield` text-renderer
+  limitation where a secret value sitting only on a removed/context diff line
+  (e.g. the old value of a rotated `SMTP_PASSWORD` on a `-` line in a `ci` PR
+  scan) is printed in plaintext, because masking only covers the spans
+  `ggshield` actively detects. The JSON output never emits the raw diff, so no
+  context-line value can leak.
+
 ## [0.2.1] - 2026-06-09
 
 ### Fixed

@@ -102,6 +102,22 @@ steps:
 
 > **`--show-secrets` is ignored.** The task strips it before invoking `ggshield`, so detected secrets are never printed in plaintext to the pipeline logs (which are visible to anyone with access to the run, and this task runs in every pipeline via the decorator). `ggshield` masks secret values in its output by default.
 
+### Safe logging mode
+
+`ggshield` masks the secret spans it *detects* (the added `+` lines of a diff), but its default text output prints diff **context** lines verbatim. In a `ci` (PR / commit-range) scan, a secret whose value is being *rotated* still appears on the removed (`-`) line of the patch — and that removed value is shown in plaintext, since it is context, not a detected match. This is a `ggshield` text-renderer limitation, independent of `--show-secrets`.
+
+Set `safeLogging: true` to avoid it. The task then runs `ggshield` with `--format json` (which never emits the raw diff) and prints a redacted, human-readable summary instead — detector, file, line, the masked match value, and the incident URL:
+
+```yaml
+  - task: ggshield@0
+    inputs:
+      gitguardianConnection: 'gitguardian-api'
+      scanMode: 'ci'
+      safeLogging: true
+```
+
+It defaults to `false` to preserve `ggshield`'s familiar annotated-patch output. Use the [GitGuardian dashboard](https://dashboard.gitguardian.com) for the full diff context.
+
 ## Before rolling out org-wide
 
 The decorator fires on every agent job in every pipeline, so a broad rollout meaningfully increases ggshield API traffic. Those calls are subject to **API rate limits** shared across your workspace — review your quotas and headroom first: [usage, quotas, and rate limiting](https://docs.gitguardian.com/api-docs/usage-and-quotas#rate-limiting).
@@ -112,6 +128,7 @@ The decorator fires on every agent job in every pipeline, so a broad rollout mea
 
 - ggshield is auto-installed on demand if missing. The task tries `pipx`, then `python3 -m pip`, `python -m pip`, `pip3`, `pip`, in that order. Bake ggshield into self-hosted agent images to remove ~5s of cold-start overhead per job.
 - Only `secret scan ci` / `path` / `docker` modes are exposed.
+- By default the task streams `ggshield`'s text output, which masks detected secret spans but prints diff *context* (e.g. removed `-` lines) verbatim — so a rotated secret's old value can appear in plaintext. Enable `safeLogging` (see above) to suppress the raw diff and print a redacted JSON-driven summary instead.
 - Windows-hosted agents need Python 3.8+ on `PATH` for the auto-install fallback.
 - The decorator fires on every agent job; gate by branch or path with `${{ if ... }}` in `decorator/ggshield-decorator.yml` if needed.
 - The task strips `--show-secrets` from `additionalArguments`, but a repo can still

@@ -305,6 +305,109 @@ function stripShowSecrets(parsedArgs: string[]): string[] {
 }
 
 /**
+ * Render ggshield's `--format json` scan output as a redacted, human-readable
+ * summary that is safe to print to the pipeline logs.
+ *
+ * This exists to work around a ggshield text-renderer limitation: in its
+ * default annotated patch output it masks only the spans it actively detects
+ * (the added `+` lines of a diff), while diff *context* lines — including a
+ * removed `-` line carrying the old value of a rotated secret — are printed
+ * verbatim. The JSON output never emits the raw patch: it serializes only the
+ * already-censored match value plus metadata, so we reconstruct the report
+ * from that and can never leak a plaintext value sitting on a context line.
+ */
+function renderRedactedScan(jsonOutput: string): string {
+  let parsed: any;
+  try {
+    parsed = JSON.parse(jsonOutput);
+  } catch {
+    // Not valid JSON (e.g. ggshield printed nothing on a clean scan, or an
+    // error landed on stdout). Caller falls back to a generic message.
+    return '';
+  }
+
+  const lines: string[] = [];
+
+  const renderMatch = (occ: any): void => {
+    const type = occ?.match_type ?? 'secret';
+    // `match` is the censored value (e.g. "ab*****bi") because the task never
+    // passes --show-secrets; printing it is safe and useful for triage.
+    const value = occ?.match ?? '';
+    const lineStart = occ?.line_start;
+    const lineEnd = occ?.line_end;
+    const loc =
+      lineStart != null
+        ? lineEnd != null && lineEnd !== lineStart
+          ? ` [lines ${lineStart}-${lineEnd}]`
+          : ` [line ${lineStart}]`
+        : '';
+    lines.push(`     - ${type}: ${value}${loc}`);
+  };
+
+  const renderResult = (result: any): void => {
+    const filename = result?.filename ?? '(unknown file)';
+    const incidents: any[] = result?.incidents ?? [];
+    if (incidents.length === 0) {
+      return;
+    }
+    lines.push('');
+    lines.push(
+      `> ${filename}: ${incidents.length} ` +
+      `${incidents.length === 1 ? 'incident' : 'incidents'}`
+    );
+    for (const incident of incidents) {
+      const detector = incident?.detector ?? 'Unknown detector';
+      const occurrences: any[] = incident?.occurrences ?? [];
+      const count = incident?.total_occurrences ?? occurrences.length;
+      lines.push(
+        `  >> ${detector} — ${count} ` +
+        `${count === 1 ? 'occurrence' : 'occurrences'}`
+      );
+      if (incident?.validity) {
+        lines.push(`     Validity: ${incident.validity}`);
+      }
+      if (incident?.known_secret) {
+        lines.push(
+          `     Known by GitGuardian dashboard: yes` +
+          (incident?.incident_url ? ` (${incident.incident_url})` : '')
+        );
+      }
+      if (incident?.ignore_reason) {
+        const reason =
+          incident.ignore_reason?.kind ?? incident.ignore_reason;
+        lines.push(`     Ignored: ${reason}`);
+      }
+      for (const occ of occurrences) {
+        renderMatch(occ);
+      }
+    }
+  };
+
+  let total = 0;
+  const walk = (scan: any): void => {
+    if (!scan) {
+      return;
+    }
+    total += scan?.total_incidents ?? 0;
+    for (const result of scan?.results ?? []) {
+      renderResult(result);
+    }
+    for (const inner of scan?.scans ?? []) {
+      walk(inner);
+    }
+  };
+  walk(parsed);
+
+  const header =
+    total > 0
+      ? `ggshield detected ${total} ${total === 1 ? 'incident' : 'incidents'} ` +
+        `(safe logging mode — secret values are masked and the raw diff is not printed):`
+      : 'ggshield: no new secrets detected (safe logging mode).';
+
+  return [header, ...lines, ''].join('\n');
+}
+
+/**
  * Try a list of (cmd, args) tuples and return the first that exits 0.
  * Returns null if nothing worked.
  */
@@ -330,6 +433,7 @@ async function run(): Promise<void> {
     const scanTarget = tl.getInput('scanTarget', false) || '.';
     const additionalArgs = tl.getInput('additionalArguments', false) || '';
     const failOnIssues = tl.getBoolInput('failOnIssues', false);
+    const safeLogging = tl.getBoolInput('safeLogging', false);
 
     const rawTimeout = tl.getInput('scanTimeoutSeconds', false) || '80';
     const parsedTimeout = Number.parseInt(rawTimeout, 10);
@@ -442,7 +546,32 @@ async function run(): Promise<void> {
       }
     }
 
-    const args = [...ggshieldPrefix, 'secret', 'scan', scanMode];
+    const extraArgs =
+      additionalArgs.trim() !== ''
+        ? stripShowSecrets(splitArgs(additionalArgs))
+        : [];
+
+    const args = [...ggshieldPrefix, 'secret', 'scan'];
+
+    // Safe logging drives the report from ggshield's JSON output, which never
+    // emits the raw diff — so a secret value sitting only on a removed/context
+    // line cannot leak (ggshield's text renderer masks only detected spans).
+    // Skip if the pipeline already pinned an output format, to avoid a clash.
+    const callerSetFormat = extraArgs.some(
+      (a) => a === '--format' || a === '--json'
+    );
+    const useSafeLogging = safeLogging && !callerSetFormat;
+    if (safeLogging && callerSetFormat) {
+      tl.warning(
+        'safeLogging is enabled but additionalArguments already sets an output ' +
+        'format (--format/--json); leaving the caller-specified format in place.'
+      );
+    }
+    if (useSafeLogging) {
+      args.push('--format', 'json');
+    }
+
+    args.push(scanMode);
     if (scanMode === 'path') {
       // CI agents have no stdin, so ggshield's >50-file confirmation
       // prompt would otherwise hang the step until scanTimeoutSeconds.
@@ -450,16 +579,35 @@ async function run(): Promise<void> {
     } else if (scanMode === 'docker') {
       args.push(scanTarget);
     }
-    if (additionalArgs.trim() !== '') {
-      args.push(...stripShowSecrets(splitArgs(additionalArgs)));
-    }
+    args.push(...extraArgs);
 
     console.log(`Running: ${ggshieldCmd} ${args.join(' ')}`);
+    // In safe-logging mode, capture stdout (the JSON report) and render a
+    // redacted summary ourselves. stderr (progress, errors — never the patch)
+    // streams through normally. Otherwise inherit all streams as before.
     const result = spawnSync(ggshieldCmd, args, {
-      stdio: 'inherit',
+      stdio: useSafeLogging ? ['inherit', 'pipe', 'inherit'] : 'inherit',
       env,
-      timeout: scanTimeoutMs
+      timeout: scanTimeoutMs,
+      encoding: useSafeLogging ? 'utf8' : undefined,
+      maxBuffer: 64 * 1024 * 1024,
     });
+
+    if (useSafeLogging && result.signal !== 'SIGTERM') {
+      const rendered = renderRedactedScan((result.stdout as string) || '');
+      if (rendered) {
+        console.log(rendered);
+      } else if ((result.status ?? 0) !== 0) {
+        // Non-zero exit with unparseable stdout: surface a safe, generic note
+        // rather than dumping raw output (which we intentionally do not trust
+        // to be secret-free in this branch).
+        console.log(
+          'ggshield reported findings or an error; output suppressed in ' +
+          'safe-logging mode. Re-run with safeLogging disabled (in a private ' +
+          'pipeline) or use the GitGuardian dashboard for full details.'
+        );
+      }
+    }
 
     // Timeout: pygitguardian retries 429 rate-limits indefinitely, so a scan
     // that runs past the timeout is almost always stuck on rate-limit backoff.
@@ -499,4 +647,9 @@ async function run(): Promise<void> {
   }
 }
 
-run();
+if (require.main === module) {
+  run();
+}
+
+// Exported for unit testing; not part of the task's runtime entrypoint.
+export { renderRedactedScan };
