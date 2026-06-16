@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2] - 2026-06-16
+
+### Changed
+
+- Bumped the bundled, pinned ggshield binary from `1.51.0` to
+  [`1.52.0`](https://github.com/GitGuardian/ggshield/releases/tag/v1.52.0).
+
 ## [0.2.1] - 2026-06-09
 
 ### Fixed
