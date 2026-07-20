@@ -3,3 +3,4 @@ ggshield-scan-task/index.js
 ggshield-scan-task/index.js.map
 *.vsix
 .DS_Store
+.scratch/
