@@ -8,5 +8,5 @@
     "sourceMap": false,
     "skipLibCheck": true
   },
-  "files": ["index.ts"]
+  "include": ["index.ts", "constants.ts"]
 }

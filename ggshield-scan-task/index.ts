@@ -5,6 +5,7 @@ import { spawnSync, SpawnSyncOptions } from 'child_process';
 import * as crypto from 'crypto';
 import * as path from 'path';
 import * as fs from 'fs';
+import { GGSHIELD_SCAN_TIMEOUT_MS } from './constants';
 
 /**
  * Pinned ggshield version, read from the ggshield_version file shipped next
@@ -240,17 +241,6 @@ async function run(): Promise<void> {
   try {
     const connectionName = tl.getInput('gitguardianConnection', true)!;
 
-    const rawTimeout = tl.getInput('scanTimeoutSeconds', false) || '80';
-    const parsedTimeout = Number.parseInt(rawTimeout, 10);
-    if (!Number.isFinite(parsedTimeout) || parsedTimeout < 10) {
-      tl.setResult(
-        tl.TaskResult.Failed,
-        `scanTimeoutSeconds must be an integer >= 10 (got "${rawTimeout}").`
-      );
-      return;
-    }
-    const scanTimeoutMs = parsedTimeout * 1000;
-
     const apiKey = tl.getEndpointAuthorizationParameter(
       connectionName,
       'password',
@@ -357,7 +347,7 @@ async function run(): Promise<void> {
     const result = spawnSync(ggshieldCmd, args, {
       stdio: 'inherit',
       env,
-      timeout: scanTimeoutMs
+      timeout: GGSHIELD_SCAN_TIMEOUT_MS,
     });
 
     // Timeout: pygitguardian retries 429 rate-limits indefinitely, so a scan
@@ -367,7 +357,7 @@ async function run(): Promise<void> {
     if (result.signal === 'SIGTERM') {
       tl.setResult(
         tl.TaskResult.SucceededWithIssues,
-        `ggshield exceeded the ${parsedTimeout}s scan timeout and was terminated. ` +
+        `ggshield exceeded the ${GGSHIELD_SCAN_TIMEOUT_MS}ms scan timeout and was terminated. ` +
         `This usually indicates GitGuardian API rate-limiting; the scan was skipped to avoid blocking the build.`
       );
       return;
