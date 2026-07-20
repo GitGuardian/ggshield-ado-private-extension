@@ -1,7 +1,7 @@
 {
-  "name": "ggshield-scan-task",
+  "name": "ggshield-azure-devops-extension",
   "version": "0.2.2",
-  "description": "GitGuardian Shield task for Azure Pipelines",
+  "description": "GitGuardian extension for Azure Pipelines",
   "main": "dist/index.js",
   "scripts": {
     "lint": "eslint --fix src",

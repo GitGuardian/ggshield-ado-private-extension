@@ -1,5 +1,5 @@
 import { build, context } from "esbuild";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, copyFileSync } from "fs";
 
 const production = process.argv.includes("--production");
 const watchMode = process.argv.includes("--watch");
@@ -47,6 +47,14 @@ const syncVersionPlugin = {
     build.onStart(() => {
       patchFile("task.json", TASK_VERSION_RE, `$1${major}$2${minor}$3${patch}`);
       patchFile("vss-extension.json", EXTENSION_VERSION_RE, `$1${version}$2`);
+    });
+    // dist/ is the packaged ADO task folder. Drop the version-synced task.json
+    // beside the bundle so the task deploys as one self-contained unit and its
+    // execution target ("index.js") resolves within dist/.
+    build.onEnd((result) => {
+      if (result.errors.length === 0) {
+        copyFileSync("task.json", "dist/task.json");
+      }
     });
   },
 };
