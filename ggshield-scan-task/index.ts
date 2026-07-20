@@ -241,7 +241,6 @@ async function run(): Promise<void> {
     const connectionName = tl.getInput('gitguardianConnection', true)!;
     const scanMode = tl.getInput('scanMode', true)!;
     const scanTarget = tl.getInput('scanTarget', false) || '.';
-    const failOnIssues = tl.getBoolInput('failOnIssues', false);
 
     const rawTimeout = tl.getInput('scanTimeoutSeconds', false) || '80';
     const parsedTimeout = Number.parseInt(rawTimeout, 10);
@@ -386,18 +385,8 @@ async function run(): Promise<void> {
     if (result.status === 0) {
       tl.setResult(tl.TaskResult.Succeeded, 'No secrets detected.');
     } else if (result.status === 1) {
-      // Policy violation (secrets found). This is the only case failOnIssues governs.
-      if (failOnIssues) {
-        tl.setResult(tl.TaskResult.Failed, 'ggshield detected secrets. See output above.');
-      } else {
-        tl.setResult(
-          tl.TaskResult.SucceededWithIssues,
-          'ggshield detected secrets (not failing build: failOnIssues=false).'
-        );
-      }
+      tl.setResult(tl.TaskResult.Failed, 'ggshield detected secrets. See output above.');
     } else {
-      // Non-1 non-zero: infrastructure error (auth, network, crash). Warn but
-      // do not block the build.
       tl.setResult(
         tl.TaskResult.SucceededWithIssues,
         `ggshield exited with code ${result.status} (infrastructure error, not a secret finding). See output above.`

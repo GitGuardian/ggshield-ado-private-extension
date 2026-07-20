@@ -16,5 +16,4 @@ steps:
     inputs:
       gitguardianConnection: 'gitguardian-api'
       scanMode: 'ci'
-      failOnIssues: true
     continueOnError: false

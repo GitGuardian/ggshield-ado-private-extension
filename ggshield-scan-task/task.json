@@ -43,13 +43,6 @@
       "helpMarkDown": "Path or image to scan. Only used when scanMode is 'path' or 'docker'. Ignored for 'ci'."
     },
     {
-      "name": "failOnIssues",
-      "type": "boolean",
-      "label": "Fail the build when secrets are found",
-      "defaultValue": "true",
-      "required": false
-    },
-    {
       "name": "scanTimeoutSeconds",
       "type": "string",
       "label": "Scan timeout (seconds)",
