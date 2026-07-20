@@ -15,5 +15,4 @@ steps:
     displayName: 'ggshield - secret scan'
     inputs:
       gitguardianConnection: 'gitguardian-api'
-      scanMode: 'ci'
     continueOnError: false

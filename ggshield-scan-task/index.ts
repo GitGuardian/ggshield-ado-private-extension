@@ -239,8 +239,6 @@ function tryCommands(
 async function run(): Promise<void> {
   try {
     const connectionName = tl.getInput('gitguardianConnection', true)!;
-    const scanMode = tl.getInput('scanMode', true)!;
-    const scanTarget = tl.getInput('scanTarget', false) || '.';
 
     const rawTimeout = tl.getInput('scanTimeoutSeconds', false) || '80';
     const parsedTimeout = Number.parseInt(rawTimeout, 10);
@@ -353,14 +351,7 @@ async function run(): Promise<void> {
       }
     }
 
-    const args = [...ggshieldPrefix, 'secret', 'scan', scanMode];
-    if (scanMode === 'path') {
-      // CI agents have no stdin, so ggshield's >50-file confirmation
-      // prompt would otherwise hang the step until scanTimeoutSeconds.
-      args.push('--yes', '--recursive', scanTarget);
-    } else if (scanMode === 'docker') {
-      args.push(scanTarget);
-    }
+    const args = [...ggshieldPrefix, 'secret', 'scan', 'ci'];
 
     console.log(`Running: ${ggshieldCmd} ${args.join(' ')}`);
     const result = spawnSync(ggshieldCmd, args, {

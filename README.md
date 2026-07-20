@@ -90,7 +90,6 @@ The decorator fires on every agent job in every pipeline, so a broad rollout mea
 ## Known limits of this scaffold
 
 - ggshield is auto-installed on demand if missing. The task tries `pipx`, then `python3 -m pip`, `python -m pip`, `pip3`, `pip`, in that order. Bake ggshield into self-hosted agent images to remove ~5s of cold-start overhead per job.
-- Only `secret scan ci` / `path` / `docker` modes are exposed.
 - Windows-hosted agents need Python 3.8+ on `PATH` for the auto-install fallback.
 - The decorator fires on every agent job; gate by branch or path with `${{ if ... }}` in `decorator/ggshield-decorator.yml` if needed.
 
