@@ -1,0 +1,43 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yaml
+
+  github-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download VSIX
+        uses: actions/download-artifact@v8
+        with:
+          name: ggshield-ado-vsix
+
+      - name: Create draft GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          vsixes=(*.vsix)
+          if [ ${#vsixes[@]} -eq 0 ]; then
+            echo "No VSIXes found" >&2
+            exit 1
+          fi
+          gh release create "${GITHUB_REF_NAME}" "${vsixes[@]}" \
+            --draft \
+            --generate-notes \
+            --title "${GITHUB_REF_NAME}"
