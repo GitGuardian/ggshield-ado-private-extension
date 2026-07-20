@@ -218,93 +218,6 @@ async function resolveBinaryGgshield(): Promise<string | null> {
 }
 
 /**
- * The whole reason this extension exists: a custom task can declare a
- * Generic service connection as a typed `connectedService:Generic` input.
- * In that case, and only in that case, tl.getEndpointUrl() and
- * tl.getEndpointAuthorizationParameter() resolve the stored values.
- *
- * The `$(endpoint.url.<name>)` / `$(endpoint.password.<name>)` macros
- * used in free-form YAML variables DO NOT resolve — that's the root cause
- * of the "invalid API key" error seen by pipelines trying to share a
- * Generic connection through `variables:` or `env:` blocks.
- */
-
-/**
- * Minimal POSIX-shell-style argv splitter. Handles single quotes, double
- * quotes, and backslash escapes well enough for the additionalArguments
- * input. Avoids pulling in a dependency just for this.
- */
-function splitArgs(input: string): string[] {
-  const out: string[] = [];
-  let cur = '';
-  let inSingle = false;
-  let inDouble = false;
-  let escaped = false;
-  let hasContent = false;
-
-  for (let i = 0; i < input.length; i++) {
-    const ch = input[i];
-    if (escaped) {
-      cur += ch;
-      escaped = false;
-      hasContent = true;
-      continue;
-    }
-    if (ch === '\\' && !inSingle) {
-      escaped = true;
-      continue;
-    }
-    if (ch === "'" && !inDouble) {
-      inSingle = !inSingle;
-      hasContent = true;
-      continue;
-    }
-    if (ch === '"' && !inSingle) {
-      inDouble = !inDouble;
-      hasContent = true;
-      continue;
-    }
-    if (!inSingle && !inDouble && /\s/.test(ch)) {
-      if (hasContent) {
-        out.push(cur);
-        cur = '';
-        hasContent = false;
-      }
-      continue;
-    }
-    cur += ch;
-    hasContent = true;
-  }
-  if (hasContent) {
-    out.push(cur);
-  }
-  return out;
-}
-
-/**
- * Drop any `--show-secrets` token from the forwarded arguments.
- *
- * That flag makes ggshield print every detected secret in plaintext, which then
- * lands in the pipeline logs — readable by anyone with access to the run. This
- * task is injected org-wide by a decorator, so a single pipeline enabling it
- * leaks real credentials into broadly-visible logs. ggshield otherwise censors
- * secrets by default (e.g. `Xy9$k***...23XYZ`), which is what we keep.
- *
- * This is the one deliberate exception to forwarding additionalArguments
- * verbatim: a secret scanner must never be the thing that prints the secret.
- */
-function stripShowSecrets(parsedArgs: string[]): string[] {
-  const kept = parsedArgs.filter((arg) => arg !== '--show-secrets');
-  if (kept.length !== parsedArgs.length) {
-    tl.warning(
-      'Ignoring --show-secrets: it would print detected secrets in plaintext ' +
-      'to the pipeline logs. ggshield keeps secret values masked in its output.'
-    );
-  }
-  return kept;
-}
-
-/**
  * Try a list of (cmd, args) tuples and return the first that exits 0.
  * Returns null if nothing worked.
  */
@@ -328,7 +241,6 @@ async function run(): Promise<void> {
     const connectionName = tl.getInput('gitguardianConnection', true)!;
     const scanMode = tl.getInput('scanMode', true)!;
     const scanTarget = tl.getInput('scanTarget', false) || '.';
-    const additionalArgs = tl.getInput('additionalArguments', false) || '';
     const failOnIssues = tl.getBoolInput('failOnIssues', false);
 
     const rawTimeout = tl.getInput('scanTimeoutSeconds', false) || '80';
@@ -449,9 +361,6 @@ async function run(): Promise<void> {
       args.push('--yes', '--recursive', scanTarget);
     } else if (scanMode === 'docker') {
       args.push(scanTarget);
-    }
-    if (additionalArgs.trim() !== '') {
-      args.push(...stripShowSecrets(splitArgs(additionalArgs)));
     }
 
     console.log(`Running: ${ggshieldCmd} ${args.join(' ')}`);

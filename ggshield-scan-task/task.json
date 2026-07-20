@@ -43,13 +43,6 @@
       "helpMarkDown": "Path or image to scan. Only used when scanMode is 'path' or 'docker'. Ignored for 'ci'."
     },
     {
-      "name": "additionalArguments",
-      "type": "string",
-      "label": "Additional ggshield arguments",
-      "required": false,
-      "helpMarkDown": "Extra flags passed verbatim to ggshield (e.g. --exit-zero, --exclude, --banlist-detector). Note: --show-secrets is ignored on purpose so secret values are never printed in plaintext to the pipeline logs."
-    },
-    {
       "name": "failOnIssues",
       "type": "boolean",
       "label": "Fail the build when secrets are found",
