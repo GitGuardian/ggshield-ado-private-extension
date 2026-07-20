@@ -2,11 +2,13 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "moduleResolution": "node",
+    "lib": ["ES2020"],
     "esModuleInterop": true,
     "strict": true,
     "sourceMap": false,
-    "skipLibCheck": true
+    "rootDir": "src",
+    "skipLibCheck": true,
+    "types": ["node"]
   },
-  "include": ["index.ts", "constants.ts"]
+  "include": ["src/**/*.ts"]
 }

@@ -1,0 +1,47 @@
+default_stages: [pre-commit]
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # not python related
+      - id: check-added-large-files
+      - id: check-merge-conflict
+
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.9.1
+    hooks:
+      - id: commitizen
+        # don't forget to run pre-commit install --hook-type commit-msg for this hook to run
+        stages: [commit-msg]
+        additional_dependencies: [ggcommitizen]
+
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.8.3
+    hooks:
+      - id: prettier
+        exclude: \.(m?js|ts)$
+
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        verbose: false
+        language: system
+        types: [file]
+        entry: npm run lint
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        exclude: ^(ggshield-internal|package-lock\.json)
+
+  - repo: https://github.com/gitguardian/ggshield
+    rev: v1.50.3
+    hooks:
+      - id: ggshield
+        language_version: python3
+        stages: [pre-commit]

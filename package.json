@@ -1,0 +1,30 @@
+{
+  "name": "ggshield-scan-task",
+  "version": "0.1.0",
+  "description": "GitGuardian Shield task for Azure Pipelines",
+  "main": "dist/index.js",
+  "scripts": {
+    "lint": "eslint --fix src",
+    "compile": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "check": "tsc --noEmit -p ./tsconfig.json",
+    "clean": "rm -f index.js index.js.map"
+  },
+  "dependencies": {
+    "azure-pipelines-task-lib": "^4.13.0",
+    "azure-pipelines-tool-lib": "^2.0.7",
+    "esbuild": "^0.28.1",
+    "eslint": "^10.7.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "sigstore": "^3.1.0",
+    "typescript-eslint": "^8.64.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^5.3.0"
+  },
+  "overrides": {
+    "shelljs": "0.10.0"
+  }
+}

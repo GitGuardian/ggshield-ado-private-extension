@@ -37,6 +37,7 @@ Output: a `.vsix` in the project root, named `<publisher>.ggshield-ado-private-e
 1. Go to https://marketplace.visualstudio.com/manage and upload the `.vsix`. The extension shows up under your publisher with **Availability: Private (shared with…)**:
 
    ![Marketplace publisher portal showing the private extension](images/marketplace-publisher-portal.png)
+
 2. Click `...` → **Share/Unshare** and add your ADO organization (e.g. `https://dev.azure.com/myorg`).
 3. In your ADO org: **Organization Settings → Extensions → Shared** → click the extension → **Install**:
 
@@ -67,6 +68,7 @@ In the target ADO project: **Project Settings → Service connections → New se
    steps:
      - script: echo "my real build steps go here"
    ```
+
 2. Run the pipeline — a `ggshield - secret scan` step should appear right after `Checkout`.
 3. Add a hardcoded test secret to verify the env-var plumbing; the scan should fail the build:
 
