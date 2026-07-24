@@ -11,6 +11,11 @@
   "icons": {
     "default": "images/extension-icon.png"
   },
+  "content": {
+    "details": {
+      "path": "overview.md"
+    }
+  },
   "files": [
     { "path": "dist" },
     {
