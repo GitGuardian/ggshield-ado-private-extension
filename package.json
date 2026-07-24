@@ -1,6 +1,6 @@
 {
   "name": "ggshield-azure-devops-extension",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "GitGuardian extension for Azure Pipelines",
   "main": "dist/index.js",
   "scripts": {
