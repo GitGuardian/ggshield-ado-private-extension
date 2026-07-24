@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0] - 2026-07-24
+
+### Changed
+
+- Remove arbitrary ggshield command execution and unused configuration options. The extension always runs `ggshield secret scan ci` and `skipGGShield` (skips the task in decorated pipelines) is the only configuration option for users.
+
 ## [0.2.2] - 2026-06-16
 
 ### Changed
