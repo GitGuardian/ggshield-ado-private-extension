@@ -3,6 +3,8 @@ import { spawnSync } from "child_process";
 import { GGSHIELD_SCAN_TIMEOUT_MS } from "./constants";
 import { resolveGgshieldCommand } from "./ggshield";
 
+declare const __PRODUCTION__: boolean;
+
 async function run(): Promise<void> {
   try {
     const connectionName = tl.getInput("gitguardianConnection", true)!;
@@ -67,4 +69,8 @@ async function run(): Promise<void> {
   }
 }
 
-run().catch((err) => tl.setResult(tl.TaskResult.Failed, String(err)));
+if (__PRODUCTION__) {
+  run().catch((err) => tl.setResult(tl.TaskResult.Failed, String(err)));
+} else {
+  module.exports.ggshieldSmokeTest = resolveGgshieldCommand;
+}
