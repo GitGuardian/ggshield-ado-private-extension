@@ -8,6 +8,7 @@
     "compile": "node build.mjs",
     "watch": "node build.mjs --watch",
     "check": "tsc --noEmit -p ./tsconfig.json",
+    "test": "npm run compile && node --test test/smoke.test.js",
     "clean": "rm -f index.js index.js.map",
     "package": "tfx extension create --manifest-globs vss-extension.json"
   },

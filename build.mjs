@@ -68,7 +68,8 @@ const options = {
   outfile: "dist/index.js",
   platform: "node",
   define: {
-    __GGSHIELD_VERSION__: JSON.stringify(ggshieldVersion), // -> "1.52.0" (a string literal)
+    __GGSHIELD_VERSION__: JSON.stringify(ggshieldVersion),
+    __PRODUCTION__: JSON.stringify(production),
   },
   plugins: [syncVersionPlugin],
 };
