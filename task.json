@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+  "id": "e8d96bd3-5afb-4e3c-b219-b681a8fed9c2",
+  "name": "ggshield",
+  "friendlyName": "ggshield - Secret Scan",
+  "description": "Scan for hardcoded secrets using ggshield. Credentials are read from a Generic service connection.",
+  "helpUrl": "https://docs.gitguardian.com/ggshield-docs/integrations/cicd-integrations/azure-pipelines",
+  "category": "Build",
+  "author": "GitGuardian",
+  "version": {
+    "Major": 0,
+    "Minor": 2,
+    "Patch": 2
+  },
+  "instanceNameFormat": "ggshield - ci",
+  "inputs": [
+    {
+      "name": "gitguardianConnection",
+      "type": "connectedService:Generic",
+      "label": "GitGuardian service connection",
+      "required": true,
+      "helpMarkDown": "Generic service connection that stores the ggshield API key (Password field) and, optionally, the GitGuardian dashboard URL (Server URL field, e.g. `https://dashboard.gitguardian.com` for SaaS US, `https://dashboard.eu1.gitguardian.com` for SaaS EU, or your self-hosted dashboard URL). ggshield derives the API URL from the dashboard URL."
+    }
+  ],
+  "execution": {
+    "Node20_1": {
+      "target": "index.js"
+    }
+  }
+}

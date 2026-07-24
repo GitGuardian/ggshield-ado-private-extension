@@ -1,21 +1,23 @@
 {
   "manifestVersion": 1,
-  "id": "ggshield-ado-private-extension",
+  "id": "ggshield-azure-devops-extension",
   "name": "ggshield for Azure Pipelines",
   "version": "0.2.2",
-  "publisher": "REPLACE-WITH-YOUR-PUBLISHER-ID",
+  "publisher": "gitguardian-secret-security",
   "public": false,
-  "description": "Private extension that injects ggshield secret scanning into every pipeline in your Azure DevOps organization. Credentials are read from a Generic service connection.",
+  "description": "Azure DevOps extension that injects ggshield secret scanning into every pipeline in your Azure DevOps organization. Credentials are read from a Generic service connection.",
   "categories": ["Azure Pipelines"],
-  "targets": [
-    { "id": "Microsoft.VisualStudio.Services" }
-  ],
+  "targets": [{ "id": "Microsoft.VisualStudio.Services" }],
   "icons": {
     "default": "images/extension-icon.png"
   },
   "files": [
-    { "path": "ggshield-scan-task" },
-    { "path": "decorator/ggshield-decorator.yml", "addressable": true, "contentType": "text/plain" },
+    { "path": "dist" },
+    {
+      "path": "decorator/ggshield-decorator.yml",
+      "addressable": true,
+      "contentType": "text/plain"
+    },
     { "path": "images/extension-icon.png", "addressable": true }
   ],
   "contributions": [
@@ -24,7 +26,7 @@
       "type": "ms.vss-distributed-task.task",
       "targets": ["ms.vss-distributed-task.tasks"],
       "properties": {
-        "name": "ggshield-scan-task"
+        "name": "dist"
       }
     },
     {

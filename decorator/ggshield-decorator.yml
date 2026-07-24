@@ -10,11 +10,9 @@
 # collection level and grant access to all pipelines.
 
 steps:
-- ${{ if ne(variables['skipGGShield'], 'true') }}:
-  - task: ggshield@0
-    displayName: 'ggshield - secret scan'
-    inputs:
-      gitguardianConnection: 'gitguardian-api'
-      scanMode: 'ci'
-      failOnIssues: true
-    continueOnError: false
+  - ${{ if ne(variables['skipGGShield'], 'true') }}:
+      - task: ggshield@0
+        displayName: "ggshield - secret scan"
+        inputs:
+          gitguardianConnection: "gitguardian-api"
+        continueOnError: false
