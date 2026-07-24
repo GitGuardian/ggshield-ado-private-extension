@@ -24,7 +24,7 @@
   "devDependencies": {
     "@types/node": "^20.19.43",
     "tfx-cli": "^0.23.4",
-    "typescript": "^5.3.0"
+    "typescript": "^7.0.2"
   },
   "overrides": {
     "shelljs": "0.10.0"
