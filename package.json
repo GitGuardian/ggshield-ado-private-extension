@@ -13,19 +13,19 @@
     "package": "tfx extension create --manifest-globs vss-extension.json"
   },
   "dependencies": {
-    "azure-pipelines-task-lib": "^4.13.0",
+    "azure-pipelines-task-lib": "^5.278.0",
     "azure-pipelines-tool-lib": "^2.0.7",
     "esbuild": "^0.28.1",
     "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
-    "sigstore": "^3.1.0",
-    "typescript-eslint": "^8.64.0"
+    "sigstore": "^4.1.1",
+    "typescript-eslint": "^8.65.0"
   },
   "devDependencies": {
-    "@types/node": "^20.19.43",
+    "@types/node": "^26.1.1",
     "tfx-cli": "^0.23.4",
-    "typescript": "^5.3.0"
+    "typescript": "^6.0.3"
   },
   "overrides": {
     "shelljs": "0.10.0"
