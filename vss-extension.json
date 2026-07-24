@@ -1,6 +1,6 @@
 {
   "manifestVersion": 1,
-  "id": "ggshield-azure-devops-extension",
+  "id": "ggshield-azure-devops",
   "name": "ggshield for Azure Pipelines",
   "version": "0.3.0",
   "publisher": "gitguardian-secret-security",
