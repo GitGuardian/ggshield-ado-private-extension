@@ -4,7 +4,7 @@
   "name": "ggshield for Azure Pipelines",
   "version": "0.2.2",
   "publisher": "gitguardian-secret-security",
-  "public": false,
+  "public": true,
   "description": "Azure DevOps extension that injects ggshield secret scanning into every pipeline in your Azure DevOps organization. Credentials are read from a Generic service connection.",
   "categories": ["Azure Pipelines"],
   "targets": [{ "id": "Microsoft.VisualStudio.Services" }],
