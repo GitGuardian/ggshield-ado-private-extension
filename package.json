@@ -10,7 +10,8 @@
     "check": "tsc --noEmit -p ./tsconfig.json",
     "test": "npm run compile && node --test test/smoke.test.js",
     "clean": "rm -f index.js index.js.map",
-    "package": "tfx extension create --manifest-globs vss-extension.json"
+    "package": "tfx extension create --manifest-globs vss-extension.json",
+    "publish": "tfx extension publish --manifest-globs vss-extension.json"
   },
   "dependencies": {
     "azure-pipelines-task-lib": "^5.278.0",
