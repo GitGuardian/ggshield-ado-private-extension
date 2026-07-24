@@ -1,7 +1,7 @@
 # GitGuardian shield for Azure DevOps
 
 Find exposed credentials in your commits using [GitGuardian shield](https://github.com/GitGuardian/ggshield).
-breaks
+
 The **GitGuardian shield** (ggshield) is a CLI application that runs in your local environment or in a CI environment to help you detect more than 600 types of secrets.
 **GitGuardian shield** uses our [public API](https://api.gitguardian.com/doc) through [py-gitguardian](https://github.com/GitGuardian/py-gitguardian) to scan your files and detect potential secrets or issues in your code. **The `/v1/scan` endpoint of the [public API](https://api.gitguardian.com/doc) is stateless. We will not store any files you are sending or any secrets we have detected**.
 
@@ -28,7 +28,7 @@ steps:
 1. Configure a new service connection in your Azure DevOps project settings
 2. Set the URL of your GitGuardian instance (default `https://dashboard.gitguardian.com`) as a server URL
 3. Set your GitGuardian service account token as a password
-4. Set the service connection name to `gitguardian-api``
+4. Set the service connection name to `gitguardian-api`
 5. Grant access permission to all pipelines
 
 ![Generic service connection configured for ggshield](images/service-connection-generic.png)
@@ -37,7 +37,7 @@ steps:
 
 ![Scan output example](images/pipeline-scan-result.png)
 
-This a sample scan result from **GitGuardian shield**.
+This is a sample scan result from **GitGuardian shield**.
 
 If the secret detected has been revoked and you do not wish to rewrite git history, you can use a value of the policy break (for example: the value of `|_password_|`) or the ignore SHA displayed in your `.gitguardian.yaml` under `matches-ignore`.
 
