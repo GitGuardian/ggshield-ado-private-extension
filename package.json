@@ -17,7 +17,7 @@
     "azure-pipelines-task-lib": "^5.278.0",
     "azure-pipelines-tool-lib": "^2.0.7",
     "esbuild": "^0.28.1",
-    "eslint": "^10.7.0",
+    "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "sigstore": "^4.1.1",
