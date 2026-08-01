@@ -21,7 +21,7 @@ jobs:
         run: npm ci
 
       - name: Run pre-commit
-        uses: j178/prek-action@v2
+        uses: j178/prek-action@v2.0.6
         env:
           GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 
