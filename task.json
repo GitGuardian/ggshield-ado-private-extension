@@ -9,10 +9,10 @@
   "author": "GitGuardian",
   "version": {
     "Major": 0,
-    "Minor": 3,
+    "Minor": 4,
     "Patch": 0
   },
-  "instanceNameFormat": "ggshield - ci",
+  "instanceNameFormat": "ggshield - $(scanScope)",
   "inputs": [
     {
       "name": "gitguardianConnection",
@@ -20,6 +20,18 @@
       "label": "GitGuardian service connection",
       "required": true,
       "helpMarkDown": "Generic service connection that stores the ggshield API key (Password field) and, optionally, the GitGuardian dashboard URL (Server URL field, e.g. `https://dashboard.gitguardian.com` for SaaS US, `https://dashboard.eu1.gitguardian.com` for SaaS EU, or your self-hosted dashboard URL). ggshield derives the API URL from the dashboard URL."
+    },
+    {
+      "name": "scanScope",
+      "type": "pickList",
+      "label": "Scan scope",
+      "defaultValue": "changes",
+      "required": false,
+      "options": {
+        "changes": "changes (commits that triggered the pipeline)",
+        "repository": "repository (current state of the checkout)"
+      },
+      "helpMarkDown": "`changes` scans the commits that triggered this run. \n\n`repository` scans the checked-out working tree. It honors the repository's `.gitignore`. Use it for a periodic full-repository scan, and keep `changes` on pull request validation."
     }
   ],
   "execution": {
