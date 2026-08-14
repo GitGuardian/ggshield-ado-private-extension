@@ -13,7 +13,6 @@ import type {
   BinaryTarget,
   ProcessReport,
 } from "./types";
-import { GGSHIELD_ARGS } from "./constants";
 
 // The bundled ggshield version declared in the project root's `ggshield_version`
 // This is auto-filled at compile time
@@ -206,15 +205,20 @@ function tryCommands(
  * - if ggshield can be installed from its GitHub releases
  * - if ggshield can be installed as a Python module
  * If any of these succeed, the resolved command and args are returned as a [string, string[]] tuple.
+ *
+ * `scanArgs` is the scan invocation to run; it is appended to whichever
+ * launcher wins, including the `python -m ggshield` fallback.
  */
-export async function resolveGgshieldCommand(): Promise<[string, string[]]> {
+export async function resolveGgshieldCommand(
+  scanArgs: string[],
+): Promise<[string, string[]]> {
   if (spawnSync("ggshield", ["--version"], { stdio: "ignore" }).status === 0) {
-    return ["ggshield", GGSHIELD_ARGS];
+    return ["ggshield", scanArgs];
   }
 
   const binPath = await resolveBinaryGgshield();
   if (binPath) {
-    return [binPath, GGSHIELD_ARGS];
+    return [binPath, scanArgs];
   }
 
   console.log(
@@ -255,8 +259,8 @@ export async function resolveGgshieldCommand(): Promise<[string, string[]]> {
       );
       throw Error("Failed to invoke python module ggshield.");
     }
-    return [moduleResolved[0], ["-m", "ggshield", ...GGSHIELD_ARGS]];
+    return [moduleResolved[0], ["-m", "ggshield", ...scanArgs]];
   } else {
-    return ["ggshield", GGSHIELD_ARGS];
+    return ["ggshield", scanArgs];
   }
 }

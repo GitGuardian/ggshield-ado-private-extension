@@ -1,6 +1,10 @@
 import * as tl from "azure-pipelines-task-lib/task";
 import { spawnSync } from "child_process";
-import { GGSHIELD_SCAN_TIMEOUT_MS } from "./constants";
+import {
+  GGSHIELD_CHANGES_ARGS,
+  GGSHIELD_REPOSITORY_ARGS,
+  GGSHIELD_SCAN_TIMEOUT_MS,
+} from "./constants";
 import { resolveGgshieldCommand } from "./ggshield";
 
 declare const __PRODUCTION__: boolean;
@@ -8,6 +12,13 @@ declare const __PRODUCTION__: boolean;
 async function run(): Promise<void> {
   try {
     const connectionName = tl.getInput("gitguardianConnection", true)!;
+    const scanArgs =
+      tl.getInput("scanScope", false) === "repository"
+        ? [
+            ...GGSHIELD_REPOSITORY_ARGS,
+            tl.getVariable("Build.SourcesDirectory") || ".",
+          ]
+        : GGSHIELD_CHANGES_ARGS;
 
     const apiKey = tl.getEndpointAuthorizationParameter(
       connectionName,
@@ -33,7 +44,7 @@ async function run(): Promise<void> {
       env["GITGUARDIAN_INSTANCE"] = instanceUrl;
     }
 
-    const [ggshieldCmd, args] = await resolveGgshieldCommand();
+    const [ggshieldCmd, args] = await resolveGgshieldCommand(scanArgs);
 
     console.log(`Running: ${ggshieldCmd} ${args.join(" ")}`);
     const result = spawnSync(ggshieldCmd, args, {
@@ -73,4 +84,6 @@ if (__PRODUCTION__) {
   run().catch((err) => tl.setResult(tl.TaskResult.Failed, String(err)));
 } else {
   module.exports.ggshieldSmokeTest = resolveGgshieldCommand;
+  module.exports.GGSHIELD_CHANGES_ARGS = GGSHIELD_CHANGES_ARGS;
+  module.exports.GGSHIELD_REPOSITORY_ARGS = GGSHIELD_REPOSITORY_ARGS;
 }

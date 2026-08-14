@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0] - 2026-08-14
+
+### Added
+
+- `scanScope` input, for pipelines that need a full-repository scan rather than
+  a diff scan. `changes` runs `ggshield secret scan ci` over the commits that triggered the run. `repository` runs `ggshield secret scan path --use-gitignore` over the checked-out working tree.
+
 ## [0.3.0] - 2026-07-24
 
 ### Changed

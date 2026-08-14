@@ -23,6 +23,21 @@ steps:
       gitguardianConnection: gitguardian-api
 ```
 
+### Choose What Gets Scanned
+
+By default the task scans the commits that triggered the run. To scan the
+current state of the checkout instead, set `scanScope` to `repository`:
+
+```yaml
+steps:
+  - task: ggshield@0
+    inputs:
+      gitguardianConnection: gitguardian-api
+      scanScope: repository
+```
+
+A `repository` scan honors the repository's `.gitignore`.
+
 ### Set Up a Service Connection
 
 1. Configure a new service connection in your Azure DevOps project settings
