@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1] - 2026-08-14
+
+### Added
+
+- Decorated pipelines can now select the scan scope by setting the pipeline
+  variable `ggshieldScanScope: repository`.
+
 ## [0.4.0] - 2026-08-14
 
 ### Added

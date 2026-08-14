@@ -38,6 +38,13 @@ steps:
 
 A `repository` scan honors the repository's `.gitignore`.
 
+When the scan is injected automatically through a decorator, select the scope with the `ggshieldScanScope` pipeline variable instead:
+
+```yaml
+variables:
+  ggshieldScanScope: repository
+```
+
 ### Set Up a Service Connection
 
 1. Configure a new service connection in your Azure DevOps project settings
