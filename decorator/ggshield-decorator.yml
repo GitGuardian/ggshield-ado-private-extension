@@ -15,4 +15,6 @@ steps:
         displayName: "ggshield - secret scan"
         inputs:
           gitguardianConnection: "gitguardian-api"
+          ${{ if eq(variables['ggshieldScanScope'], 'repository') }}:
+            scanScope: repository
         continueOnError: false
