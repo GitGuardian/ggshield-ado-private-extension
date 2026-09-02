@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "azure-pipelines-task-lib": "^5.279.0",
-    "azure-pipelines-tool-lib": "^2.0.7",
+    "azure-pipelines-tool-lib": "^2.279.1",
     "esbuild": "^0.28.1",
     "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.1.8",
