@@ -14,7 +14,7 @@
     "publish": "tfx extension publish --manifest-globs vss-extension.json"
   },
   "dependencies": {
-    "azure-pipelines-task-lib": "^5.278.0",
+    "azure-pipelines-task-lib": "^5.279.0",
     "azure-pipelines-tool-lib": "^2.0.7",
     "esbuild": "^0.28.1",
     "eslint": "^10.7.0",
